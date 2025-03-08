@@ -1,5 +1,8 @@
 package ui.util
 
+
+import java.awt.FileDialog
+import java.awt.Frame
 import javax.swing.JFileChooser
 import javax.swing.UIManager
 
@@ -24,3 +27,26 @@ fun selectFolder(): String? {
         null
     }
 }
+
+
+
+
+
+fun selectFolderAwt(): String {
+    val frame = Frame()
+
+    val dialog = FileDialog(frame, "Selecciona una carpeta", FileDialog.LOAD)
+    dialog.directory = "C:\\"
+    dialog.file = "seleccionar_una_carpeta_y_darla_a_abrir"
+    dialog.isVisible = true
+
+    val folder = dialog.directory
+    frame.dispose() // Cerrar el Frame
+
+    return if (folder != null && folder.isNotEmpty()) {
+        folder
+    } else {
+        ""
+    }
+}
+
