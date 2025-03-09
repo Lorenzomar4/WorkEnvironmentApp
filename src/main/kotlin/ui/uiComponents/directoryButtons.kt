@@ -11,59 +11,56 @@ import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
-
 import ui.util.colorHexa
 import ui.util.selectFolderAwt
 import viewModel.DirectoryButtonsVW
 
-
-
 @Composable
 fun DirectoryButtons(directoryButtonsVW: DirectoryButtonsVW = viewModel()) {
-    val folderWork by directoryButtonsVW.folderWork
+    // Usamos collectAsState() para observar los cambios en StateFlow
+    val folderWork by directoryButtonsVW.folderWork.collectAsState()
 
     Surface(
-        elevation = 4.dp, // Ajusta la elevación según el efecto deseado
-        shape = MaterialTheme.shapes.medium, // Define la forma de los bordes
-        color = colorHexa("F5F5F5"), // Color de fondo
-        modifier = Modifier
-            .fillMaxWidth()
+        elevation = 4.dp,
+        shape = MaterialTheme.shapes.medium,
+        color = colorHexa("F5F5F5"),
+        modifier = Modifier.fillMaxWidth()
     ) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(16.dp), // Padding interno del Surface
+                .padding(16.dp),
             horizontalArrangement = Arrangement.Center
         ) {
             folderButton(
                 text = "Directorio Apps",
-                folderState = remember { mutableStateOf(folderWork.workspaceApps) },
+                folderState = folderWork.workspaceApps,
                 modifier = Modifier.weight(1f),
                 directoryButtonsVW = directoryButtonsVW,
                 updateFolder = { selectedFolder ->
-                    directoryButtonsVW.folderWork.value = directoryButtonsVW.folderWork.value.copy(workspaceApps = selectedFolder)
+                    directoryButtonsVW.updateFolder(workspaceApps = selectedFolder)
                 }
             )
             Spacer(modifier = Modifier.width(8.dp))
 
             folderButton(
                 text = "Directorio Tomcat",
-                folderState = remember { mutableStateOf(folderWork.tomcatFolder) },
+                folderState = folderWork.tomcatFolder,
                 modifier = Modifier.weight(1f),
                 directoryButtonsVW = directoryButtonsVW,
                 updateFolder = { selectedFolder ->
-                    directoryButtonsVW.folderWork.value = directoryButtonsVW.folderWork.value.copy(tomcatFolder = selectedFolder)
+                    directoryButtonsVW.updateFolder(tomcatFolder = selectedFolder)
                 }
             )
             Spacer(modifier = Modifier.width(8.dp))
 
             folderButton(
                 text = "Directorio Opt",
-                folderState = remember { mutableStateOf(folderWork.optFolder) },
+                folderState = folderWork.optFolder,
                 modifier = Modifier.weight(1f),
                 directoryButtonsVW = directoryButtonsVW,
                 updateFolder = { selectedFolder ->
-                    directoryButtonsVW.folderWork.value = directoryButtonsVW.folderWork.value.copy(optFolder = selectedFolder)
+                    directoryButtonsVW.updateFolder(optFolder = selectedFolder)
                 }
             )
         }
@@ -74,7 +71,7 @@ fun DirectoryButtons(directoryButtonsVW: DirectoryButtonsVW = viewModel()) {
 fun folderButton(
     text: String,
     modifier: Modifier,
-    folderState: MutableState<String>,
+    folderState: String, // Cambiamos a String directamente
     directoryButtonsVW: DirectoryButtonsVW,
     updateFolder: (String) -> Unit
 ) {
@@ -82,7 +79,6 @@ fun folderButton(
         Button(onClick = {
             val selectedFolder = selectFolderAwt()
             if (selectedFolder.isNotEmpty()) {
-                folderState.value = selectedFolder
                 updateFolder(selectedFolder)
                 directoryButtonsVW.updateDirectory()
             }
@@ -91,7 +87,7 @@ fun folderButton(
         }
         Spacer(modifier = Modifier.height(4.dp))
         BasicTextField(
-            value = folderState.value,
+            value = folderState,
             onValueChange = {},
             textStyle = TextStyle(color = colorHexa("bfbfbf"), fontWeight = FontWeight.SemiBold, fontStyle = FontStyle.Italic)
         )
