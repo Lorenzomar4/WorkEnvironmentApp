@@ -1,31 +1,19 @@
 package viewModel
 
+import androidx.compose.runtime.mutableStateOf
 import androidx.lifecycle.ViewModel
 import com.fasterxml.jackson.databind.JsonNode
 import com.fasterxml.jackson.databind.ObjectMapper
-import config.FolderWork
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.StateFlow
-import java.io.File
 import com.fasterxml.jackson.module.kotlin.jacksonObjectMapper
+import config.FolderWork
+import java.io.File
 
 class DirectoryButtonsVW : ViewModel() {
-    private val _folderWork: MutableStateFlow<FolderWork> =
-        MutableStateFlow(FolderWork(dataSourceFolder = "", webAppsFolder = "", configTomcat = ""))
-
-    val folderWork: StateFlow<FolderWork> = _folderWork
-
+    var folderWork = mutableStateOf(FolderWork(workspaceApps = "", tomcatFolder = "", optFolder = ""))
 
     fun updateDirectory() {
-        val file = File("folderWork.json")
         val objectMapper = jacksonObjectMapper()
-
-        // Serializar el valor actual dentro de _folderWork
-        objectMapper.writeValue(file, _folderWork.value)
-
-        val anotherFile = File("anotherFile.json")
-        // Si no existe, lo crea, sino lo sobrescribe con un nuevo contenido
-        objectMapper.writeValue(anotherFile, _folderWork.value)
+        objectMapper.writeValue(File("folderWork.json"), folderWork.value)
     }
 
     init {
@@ -33,14 +21,11 @@ class DirectoryButtonsVW : ViewModel() {
         val file = File("folderWork.json")
         val rootNode: JsonNode = objectMapper.readTree(file)
 
-        val dataSourceFolder = rootNode.get("dataSourceFolder").asText()
-        val webAppsFolder = rootNode.get("webAppsFolder").asText()
-        val configTomcat = rootNode.get("configTomcat").asText()
-
-        _folderWork.value = FolderWork(
-            dataSourceFolder = dataSourceFolder,
-            webAppsFolder = webAppsFolder,
-            configTomcat = configTomcat
+        // Cargar el estado inicial de folderWork desde el archivo
+        folderWork.value = FolderWork(
+            workspaceApps = rootNode.get("workspaceApps").asText(),
+            tomcatFolder = rootNode.get("tomcatFolder").asText(),
+            optFolder = rootNode.get("optFolder").asText()
         )
     }
 }

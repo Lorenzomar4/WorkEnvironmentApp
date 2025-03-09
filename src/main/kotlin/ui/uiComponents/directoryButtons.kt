@@ -6,29 +6,19 @@ import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
 
 import ui.util.colorHexa
-import ui.util.selectFolder
 import ui.util.selectFolderAwt
 import viewModel.DirectoryButtonsVW
-import java.io.File
-import javax.swing.SwingUtilities
 
 @Composable
 fun DirectoryButtons(directoryButtonsVW: DirectoryButtonsVW = viewModel()) {
-    val folderWork by directoryButtonsVW.folderWork.collectAsState()
-
-    // Estados para almacenar las carpetas seleccionadas
-    val dataSourceFolder = remember { mutableStateOf(folderWork.dataSourceFolder) }
-    val webAppsFolder = remember { mutableStateOf(folderWork.webAppsFolder) }
-    val configTomcat = remember { mutableStateOf(folderWork.configTomcat) }
+    val folderWork by directoryButtonsVW.folderWork
 
     Surface(
         elevation = 4.dp, // Ajusta la elevación según el efecto deseado
@@ -44,25 +34,24 @@ fun DirectoryButtons(directoryButtonsVW: DirectoryButtonsVW = viewModel()) {
             horizontalArrangement = Arrangement.Center
         ) {
             folderButton(
-                text = "Directorio del datasource",
-                folderState = dataSourceFolder,
+                text = "Directorio Apps",
+                folderState = remember { mutableStateOf(folderWork.workspaceApps) },
                 modifier = Modifier.weight(1f),
                 directoryButtonsVW = directoryButtonsVW
             )
             Spacer(modifier = Modifier.width(8.dp))
 
             folderButton(
-                text = "Directorio webApps",
-                folderState = webAppsFolder,
+                text = "Directorio Tomcat",
+                folderState = remember { mutableStateOf(folderWork.tomcatFolder) },
                 modifier = Modifier.weight(1f),
                 directoryButtonsVW = directoryButtonsVW
-
             )
             Spacer(modifier = Modifier.width(8.dp))
 
             folderButton(
-                text = "Directorio config tomcat",
-                folderState = configTomcat,
+                text = "Directorio Opt",
+                folderState = remember { mutableStateOf(folderWork.optFolder) },
                 modifier = Modifier.weight(1f),
                 directoryButtonsVW = directoryButtonsVW
             )
@@ -74,7 +63,7 @@ fun DirectoryButtons(directoryButtonsVW: DirectoryButtonsVW = viewModel()) {
 fun folderButton(
     text: String,
     modifier: Modifier,
-    folderState: MutableState<String> ,
+    folderState: MutableState<String>,
     directoryButtonsVW: DirectoryButtonsVW
 ) {
     Column(modifier = modifier, horizontalAlignment = Alignment.CenterHorizontally) {
@@ -82,10 +71,14 @@ fun folderButton(
             val selectedFolder = selectFolderAwt()
             if (selectedFolder.isNotEmpty()) {
                 folderState.value = selectedFolder
+                // Actualizamos el objeto FolderWork en el ViewModel
+                when (text) {
+                    "Directorio Apps" -> directoryButtonsVW.folderWork.value = directoryButtonsVW.folderWork.value.copy(workspaceApps = selectedFolder)
+                    "Directorio Tomcat" -> directoryButtonsVW.folderWork.value = directoryButtonsVW.folderWork.value.copy(tomcatFolder = selectedFolder)
+                    "Directorio Opt" -> directoryButtonsVW.folderWork.value = directoryButtonsVW.folderWork.value.copy(optFolder = selectedFolder)
+                }
                 directoryButtonsVW.updateDirectory()
             }
-
-
         }, modifier = Modifier.fillMaxWidth()) {
             Text(text)
         }
